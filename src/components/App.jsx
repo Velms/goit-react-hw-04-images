@@ -1,91 +1,124 @@
-import React, { Component } from 'react';
-import shortid from 'shortid';
-import s from './App.module.css';
-import ContactList from './ContactList/ContactList';
-import ContactForm from './ContactForm';
-import Filter from './Filter';
+/* eslint-disable react-hooks/exhaustive-deps */
+import React, { useState, useEffect } from 'react';
+import * as Scroll from 'react-scroll';
+import { ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
-class App extends Component {
-  state = {
-    contacts: [
-      { id: 'id-1', name: 'Rosie Simpson', number: '459-12-56' },
-      { id: 'id-2', name: 'Hermione Kline', number: '443-89-12' },
-      { id: 'id-3', name: 'Eden Clements', number: '645-17-79' },
-      { id: 'id-4', name: 'Annie Copeland', number: '227-91-26' },
-    ],
-    filter: '',
-  };
+import { Button } from './Button/Button';
+import { ImageGallery } from './imageGallery/ImageGallery';
+import { ImageGalleryItem } from './imageGalleryItem/ImageGalleryItem';
+import { Modal } from './Modal/Modal';
+import { Searchbar } from './searchbar/Searchbar';
+import * as message from './notification';
+import { imagesApi } from './imagesApi';
+import { Loader } from './Loader/Loader';
 
-  addContact = ({ name, number }) => {
-    const normalizedName = name.toLowerCase();
+export function App() {
+  const [search, setSearch] = useState('');
+  const [page, setPage] = useState(1);
+  const [images, setImages] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [totalImages, setTotalImages] = useState(0);
+  const [selectImage, setSelectImage] = useState(null);
 
-    const isAdded = this.state.contacts.find(el => {
-      return (el.name.toLowerCase() === normalizedName) 
-    });
+  const maxPage = Math.ceil(totalImages / 12);
+  const showButton = images.length > 0 && page < maxPage;
 
-    if (isAdded) {
-      alert(`${name} is already in contacts`);
+  useEffect(() => {
+    if (search === '') {
       return;
     }
-    const contact = {
-      id: shortid.generate(),
-      name: name,
-      number: number,
+
+    async function newSearchRequestServer() {
+      try {
+        const response = await imagesApi({ search, page });
+        const totalImages = response.data.totalHits;
+        const images = response.data.hits;
+
+        if (totalImages === 0 || images === '') {
+          return message.notificationError();
+        }
+        if (page === 1) {
+          message.notificationSuccess(totalImages);
+        }
+        setImages(prevState => [...prevState, ...images]);
+        setTotalImages(totalImages);
+      } catch (error) {
+        // console.log('error in newSearchRequestServer');
+        message.notificationServerError();
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    setLoading(true);
+    newSearchRequestServer();
+
+    return () => {
+      // ^abortController?
     };
-    this.setState(prevState => ({
-      contacts: [...prevState.contacts, contact],
-    }));
-  };
+  }, [search, page]);
 
-  changeFilter = e => {
-    this.setState({ filter: e.currentTarget.value });
-  };
+  function trackingSearchQuery(evt) {
+    evt.preventDefault();
 
-  getVisibleContacts = () => {
-    const { filter, contacts } = this.state;
-    const normalizedFilter = filter.toLowerCase();
+    const form = evt.currentTarget;
+    const searchValue = form.elements.search.value;
 
-    return contacts.filter(contact =>
-      contact.name.toLowerCase().includes(normalizedFilter)
-    );
-  };
+    if (searchValue.trim() === '') {
+      return message.notificationInfo();
+    }
+    setPage(1);
+    setImages([]);
+    setSearch(searchValue);
 
-  deleteContact = todoId => {
-    this.setState(prevState => ({
-      contacts: prevState.contacts.filter(contact => contact.id !== todoId),
-    }));
-  };
-
-  render() {
-    const { contacts, filter } = this.state;
-    const visibleContacts = this.getVisibleContacts();
-
-    return (
-      <div
-        style={{
-          // height: '100vh',
-          display: 'flex',
-          justifyContent: 'center',
-          alignItems: 'center',
-          flexDirection: 'column',
-          fontSize: 18,
-          // textTransform: 'uppercase',
-          color: '#010101',
-        }}
-      >
-        <h1>Phonebook</h1>
-        <ContactForm onSubmit={this.addContact} />
-
-        <h2 className={s.titleContacts}>Contacts</h2>
-        <div className={s.allContacts}>All contacts: {contacts.length}</div>
-        <Filter value={filter} onChange={this.changeFilter} />
-        <ContactList
-          contacts={visibleContacts}
-          onDeleteContact={this.deleteContact}
-        />
-      </div>
-    );
+    form.reset();
   }
-}
 
-export default App;
+  function loadMoreImages() {
+    setPage(prevState => prevState + 1);
+
+    scrolling();
+  }
+
+  function openModal(evt) {
+    const imageInfo = { alt: evt.target.alt, url: evt.currentTarget.dataset.large };
+
+    setSelectImage(imageInfo);
+  }
+
+  function closeModal() {
+    setSelectImage(null);
+  }
+
+  function scrolling() {
+    const scroll = Scroll.animateScroll;
+    scroll.scrollMore(650);
+  }
+
+  return (
+    <>
+      <Searchbar onSubmit={trackingSearchQuery} />
+      <ImageGallery>
+        {images.map(image => (
+          <ImageGalleryItem key={image.id} image={image} onClick={openModal} />
+        ))}
+      </ImageGallery>
+      {loading && <Loader />}
+      {showButton && <Button onClick={loadMoreImages} />}
+      {selectImage && <Modal onClose={closeModal} image={selectImage} />}
+      <ToastContainer
+        position="top-right"
+        autoClose={5000}
+        hideProgressBar
+        newestOnTop
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+        theme="colored"
+      />
+    </>
+  );
+}
