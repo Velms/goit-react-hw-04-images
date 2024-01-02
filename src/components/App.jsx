@@ -32,6 +32,8 @@ export function App() {
     async function newSearchRequestServer() {
       try {
         const response = await imagesApi({ search, page });
+        const totalImages = response.data.totalHits;
+        const images = response.data.hits;
 
         if (totalImages === 0 || images === '') {
           return message.notificationError();
