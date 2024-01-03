@@ -17,7 +17,7 @@ export function Modal({ onClose, image }) {
     return () => {
       window.removeEventListener('keydown', keydownClick);
     };
-  }, []);
+  }, [onClose]);
 
   function backdropClick(evt) {
     if (evt.target === evt.currentTarget) {
