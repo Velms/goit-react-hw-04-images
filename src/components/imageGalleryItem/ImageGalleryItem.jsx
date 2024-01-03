@@ -4,7 +4,7 @@ import css from './ImageGalleryItem.module.css';
 export function ImageGalleryItem({ image, onClick }) {
   return (
     <li className={css.imageGalleryItem}>
-      <img id={image.id} src={image.webformatURL} alt={image.tags} onClick={()=> onClick  (image.largeImageURL,image.tags)} />
+      <img id={image.id} src={image.webformatURL} alt={image.tags} onClick={()=> onClick(image.largeImageURL,image.tags)} />
     </li>
   );
 }
