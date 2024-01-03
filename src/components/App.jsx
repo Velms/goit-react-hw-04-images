@@ -65,9 +65,7 @@ export function App() {
     const form = evt.currentTarget;
     const searchValue = form.elements.search.value;
 
-    if (searchValue.trim() === '') {
-      return message.notificationInfo();
-    }
+
     setPage(1);
     setImages([]);
     setSearch(searchValue);
