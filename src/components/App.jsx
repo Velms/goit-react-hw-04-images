@@ -59,7 +59,7 @@ export function App() {
     };
   }, [search, page]);
 
-  function trackingSearchQuery(evt) {
+  function trackingSearchQuery(searchValue) {
     evt.preventDefault();
 
     const form = evt.currentTarget;
