@@ -3,7 +3,7 @@ import PropTypes from 'prop-types';
 import css from './Modal.module.css';
 
 export function Modal({ onClose, image }) {
-  const { url, alt } = image;
+  const { largeImageURL: url, alt } = image;
 
   useEffect(() => {
     function keydownClick(evt) {
