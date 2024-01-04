@@ -79,12 +79,11 @@ export function App() {
     scrolling();
   }
 
-  handleSelectedImage = (largeImageUrl, tags) => {
-    this.setState({
-      selectedImage: largeImageUrl,
-      alt: tags,
-    });
-  };
+  function penModal(image.largeImageURL,alt){
+    const imageInfo = {alt,image.tags};
+
+    setSelectImage(imageInfo);
+  }
 
   function closeModal() {
     setSelectImage(null);
