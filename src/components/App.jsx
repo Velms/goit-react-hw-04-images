@@ -79,8 +79,8 @@ export function App() {
     scrolling();
   }
 
-  function openModal(URL,alt){
-    const imageInfo = {alt,URL};
+  function openModal(evt){
+    const imageInfo = {alt: evt.target.alt, url: evt.currentTarget.dataset.large};
 
     setSelectImage(imageInfo);
   }
