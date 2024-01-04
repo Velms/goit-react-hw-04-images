@@ -79,8 +79,8 @@ export function App() {
     scrolling();
   }
 
-  function penModal(image.largeImageURL,alt){
-    const imageInfo = {alt,image.tags};
+  function penModal(evt){
+    const imageInfo = {alt: evt.target.alt, url: evt.currentTarget.dataset.large};
 
     setSelectImage(imageInfo);
   }
